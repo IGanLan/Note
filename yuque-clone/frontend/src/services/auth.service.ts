@@ -1,4 +1,4 @@
-import apiClient from './api';
+import apiClient from '../utils/api';
 import { endpoints } from '../config';
 
 export interface User {
