@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: yuque_db
+    environment:
+      POSTGRES_USER: yuque_user
+      POSTGRES_PASSWORD: yuque_password
+      POSTGRES_DB: yuque_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - yuque_net
+
+  backend:
+    build: ./backend
+    container_name: yuque_backend
+    environment:
+      DATABASE_URL: postgres://yuque_user:yuque_password@db:5432/yuque_db
+      JWT_SECRET: super_secret_jwt_key_change_me
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - yuque_net
+
+  frontend:
+    build: ./frontend
+    container_name: yuque_frontend
+    environment:
+      VITE_API_URL: http://localhost:3000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - yuque_net
+
+volumes:
+  pgdata:
+
+networks:
+  yuque_net:
+    driver: bridge
